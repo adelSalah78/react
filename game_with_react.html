@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://fb.me/react-15.0.0.js"></script>
+    <script src="https://fb.me/react-dom-15.0.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js" type="text/javascript"></script>
+  </head>
+  <body onkeydown="globalOnKeyDown()">
+    <script type="text/babel">
+
+    class MovingWoodPiece extends React.Component {
+      constructor(props) {
+        super(props);
+        this.fillProps();
+      }
+
+      setStandingBallsArray(arr){
+        this.standingBalls = arr;
+
+        // console.log(this.standingBalls);
+        // console.log(this.standingBalls.length);
+
+        this.piecesInterval = setInterval(function(){
+
+          if(this.standingBalls.length == 0){
+            clearInterval(this.piecesInterval);
+            clearInterval(this.gameInterval);
+            alert('Congratulations, You win :D');
+          }
+
+          for(let i=0;i<this.standingBalls.length;i++){
+            if(this.standingBalls[i].checkDownHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkLeftHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkUpHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkRightHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+          }
+        }.bind(this),1);
+      }
+
+      componentDidMount(){
+        this.gameInterval = setInterval(function(){
+          this.movePiece();
+        }.bind(this),8);
+        // console.log('object: '+this.gameInterval);
+      }
+
+      fillProps(){
+        // this.props.styles = [];
+        this.props.styles.push({left: 500});
+        this.props.styles.push({width: 20});
+        this.props.styles.push({height: 20});
+        this.props.styles.push({top: 480});
+
+        this.props.styles.push({vdir: 'UP'});
+        this.props.styles.push({hdir: 'LEFT'});
+
+        this.gameOver = false;
+        this.gameOverCounter = 0;
+      }
+
+      getCurrentState(){
+        // let state = this.state;
+         // alert(this.props.styles[0].left);
+        let style = {
+          backgroundColor: 'Yellow',
+          position: 'absolute',
+          left: this.props.styles[0].left + 'px',
+          width: this.props.styles[1].width + 'px',
+          height: this.props.styles[2].height+'px',
+          top: this.props.styles[3].top+'px'
+        };
+        return style;
+      }
+
+      render(){
+        return(
+          <div ref="mwp" style={this.getCurrentState()}>
+          </div>
+        );
+      }
+
+      movePiece(){
+        if(this.gameOver){
+          clearInterval(this.gameInterval);
+          return;
+        }
+        let vdir = this.props.styles[4].vdir;
+        let hdir = this.props.styles[5].hdir;
+
+        let pieceHBoundaries = this.props.styles[0].left + this.props.styles[1].width;
+
+        const smallLeft = 0;
+        const bigLeft = 1270;
+        const smallTop = 0;
+        const bigTop = 570;
+
+        if(vdir == 'UP' && hdir == 'LEFT'){
+          this.props.styles[0].left = this.props.styles[0].left - 1;
+          this.props.styles[3].top = this.props.styles[3].top - 1;
+
+          if(this.props.styles[0].left <= smallLeft){
+            this.props.styles[5].hdir = "RIGHT";
+          }
+          else if(this.props.styles[3].top <=smallTop ){
+            this.props.styles[4].vdir = "DOWN";
+          }
+        }
+        else if(vdir == 'UP' && hdir == 'RIGHT'){
+          this.props.styles[0].left = this.props.styles[0].left + 1;
+          this.props.styles[3].top = this.props.styles[3].top - 1;
+
+          if(pieceHBoundaries >= bigLeft){
+            this.props.styles[5].hdir = "LEFT";
+          }
+          else if(this.props.styles[3].top <= smallTop ){
+            this.props.styles[4].vdir = "DOWN";
+          }
+        }
+        else if(vdir == 'DOWN' && hdir == 'LEFT'){
+          this.props.styles[0].left = this.props.styles[0].left - 1;
+          this.props.styles[3].top = this.props.styles[3].top + 1;
+
+
+          if(this.props.styles[0].left <= smallLeft){
+            this.props.styles[5].hdir = "RIGHT";
+          }
+          else if(this.props.styles[3].top >= bigTop){
+            if((this.props.styles[0].left>=this.pieceLeft && this.props.styles[0].left<=(this.pieceLeft + 80) ) ||  (pieceHBoundaries >= this.pieceLeft && pieceHBoundaries<= (this.pieceLeft + 80)) ){
+              this.props.styles[4].vdir = "UP";
+            }
+            else{
+              if(this.gameOverCounter>45)
+                this.gameOver = true;
+              else {
+                  this.gameOverCounter++;
+                }
+              if(this.gameOverCounter == 1)
+                setTimeout(function(){
+                  // clearInterval(this.gameInterval);
+                  alert('Game Over !');
+                  window.location.href = window.location.href;
+                },360);
+            }
+          }
+        }
+        else if(vdir == 'DOWN' && hdir == 'RIGHT'){
+          this.props.styles[0].left = this.props.styles[0].left + 1;
+          this.props.styles[3].top = this.props.styles[3].top + 1;
+
+          if(pieceHBoundaries >= bigLeft){
+            this.props.styles[5].hdir = "LEFT";
+          }
+          else if(this.props.styles[3].top >= bigTop){
+            if((this.props.styles[0].left>=this.pieceLeft && this.props.styles[0].left<=(this.pieceLeft + 80) ) ||  (pieceHBoundaries >= this.pieceLeft && pieceHBoundaries<= (this.pieceLeft + 80))){
+              this.props.styles[4].vdir = "UP";
+            }
+            else{
+              if(this.gameOverCounter>45)
+                this.gameOver = true;
+              else {
+                  this.gameOverCounter++;
+                }
+              if(this.gameOverCounter == 1)
+                setTimeout(function(){
+                  // clearInterval(this.gameInterval);
+                  alert('Game Over !');
+                  window.location.href = window.location.href;
+                },360);
+            }
+
+          }
+        }
+        this.refresh();
+      }
+
+      refresh(){
+        this.forceUpdate();
+      }
+
+      setPieceComponentLeft(value){
+        this.pieceLeft = value;
+      }
+
+    }
+    class StandingWoodPiece extends React.Component {
+      constructor(props) {
+        super(props);
+      }
+
+      setMovingWoodPiece(piece){
+        this.movingWoodPiece = piece;
+      }
+
+      checkUpHit(){
+        let leftDownPoint = {left: this.movingWoodPiece.props.styles[0].left, top: this.movingWoodPiece.props.styles[3].top + 20};
+        let rightDownPoint = {left: this.movingWoodPiece.props.styles[0].left + 20, top: this.movingWoodPiece.props.styles[3].top + 20};
+        if(this.isPointInBetween(leftDownPoint,this.props.style.leftUp,this.props.style.rightUp,'horizontal','') ||
+           this.isPointInBetween(rightDownPoint,this.props.style.leftUp,this.props.style.rightUp,'horizontal','')){
+          this.props.exist[0] = 'false';
+          this.forceUpdate();
+
+          this.movingWoodPiece.props.styles[4].vdir = 'UP';
+          this.movingWoodPiece.refresh();
+          console.log('checkUpHit condition achieved!!!');
+          return true;
+          // we need to remove the component from the array
+        }
+        return false;
+      }
+
+      checkLeftHit(){
+        let rightUpPoint = {left: this.movingWoodPiece.props.styles[0].left +20, top: this.movingWoodPiece.props.styles[3].top};
+        let rightDownPoint = {left: this.movingWoodPiece.props.styles[0].left + 20, top: this.movingWoodPiece.props.styles[3].top + 20};
+        if(this.isPointInBetween(rightUpPoint,this.props.style.leftUp,this.props.style.leftDown,'vertical','') ||
+           this.isPointInBetween(rightDownPoint,this.props.style.leftUp,this.props.style.leftDown,'vertical','')){
+          this.props.exist[0] = 'false';
+          this.forceUpdate();
+
+          this.movingWoodPiece.props.styles[5].hdir = 'LEFT';
+          this.movingWoodPiece.refresh();
+          console.log('checkLeftHit condition achieved!!!');
+          return true;
+          // we need to remove the component from the array
+        }
+        return false;
+      }
+
+      checkDownHit(){
+        let leftUpPoint = {left: this.movingWoodPiece.props.styles[0].left , top: this.movingWoodPiece.props.styles[3].top};
+        let rightUpPoint = {left: this.movingWoodPiece.props.styles[0].left + 20, top: this.movingWoodPiece.props.styles[3].top};
+        if(this.isPointInBetween(leftUpPoint,this.props.style.leftDown,this.props.style.rightDown,'horizontal','BOTTOM') ||
+           this.isPointInBetween(rightUpPoint,this.props.style.leftDown,this.props.style.rightDown,'horizontal','BOTTOM')){
+          this.props.exist[0] = 'false';
+          this.forceUpdate();
+
+          this.movingWoodPiece.props.styles[4].vdir = 'DOWN';
+          this.movingWoodPiece.refresh();
+          console.log('checkDownHit condition achieved!!!');
+          return true;
+          // we need to remove the component from the array
+        }
+        return false;
+      }
+
+
+      checkRightHit(){
+        let leftUpPoint = {left: this.movingWoodPiece.props.styles[0].left , top: this.movingWoodPiece.props.styles[3].top};
+        let leftDownPoint = {left: this.movingWoodPiece.props.styles[0].left , top: this.movingWoodPiece.props.styles[3].top + 20};
+        if(this.isPointInBetween(leftUpPoint,this.props.style.rightUp,this.props.style.rightDown,'vertical','RIGHT') ||
+           this.isPointInBetween(leftDownPoint,this.props.style.rightUp,this.props.style.rightDown,'vertical','RIGHT')){
+          this.props.exist[0] = 'false';
+          this.forceUpdate();
+
+          this.movingWoodPiece.props.styles[5].hdir = 'RIGHT';
+          this.movingWoodPiece.refresh();
+          console.log('checkRightHit condition achieved!!!');
+          return true;
+          // we need to remove the component from the array
+        }
+        return false;
+      }
+
+      isPointInBetween(point1,point2,point3,mode,direction){
+        if(mode == 'horizontal'){
+          // console.log(point1.left >= point2.left && point1.left <= point3.left);
+          if(direction == 'BOTTOM')
+            return (point1.left >= point2.left && point1.left <= point3.left) && point1.top == point2.top;
+          else
+            return (point1.left >= point2.left && point1.left <= point3.left) && point1.top+20 == point2.top;
+        }
+        else{
+          if(direction == 'RIGHT')
+            return (point1.top >= point2.top && point1.top <= point3.top) && point1.left + 20 == point2.left;
+          else
+            return (point1.top >= point2.top && point1.top <= point3.top) && point1.left  == point2.left;
+        }
+      }
+
+
+
+      /*setLeftUp(point){
+        this.props.style.leftUp.top = point.top;
+        this.props.style.leftUp.left = point.left;
+      }
+
+      setLeftDown(point){
+        this.props.style.leftDown.top = point.top;
+        this.props.style.leftDown.left = point.left;
+      }
+      setRightUp(point){
+        this.props.style.rightUp.top = point.top;
+        this.props.style.rightUp.left = point.left;
+      }
+      setRightDown(point){
+        this.props.style.rightDown.top = point.top;
+        this.props.style.rightDown.left = point.left;
+      }*/
+      getCurrentState(){
+        let display = 'block';
+        if(this.props.exist[0] == 'false'){
+          display = 'none';
+        }
+        let style={
+          width: this.props.width,
+          height: this.props.height,
+          backgroundColor: this.props.bgColor,
+          position: this.props.position,
+          left: this.props.style.leftUp.left+'px',
+          top: this.props.style.leftUp.top+'px',
+          // borderColor: 'Black',
+          // borderWidth: 'Medium',
+          border: '2px solid black',
+          display: display
+        };
+        return style;
+      }
+      render(){
+        return (
+          <div style={this.getCurrentState()}>
+          </div>
+        );
+      }
+    }
+
+    class UserPiece extends React.Component {
+      constructor(props) {
+          super(props);
+          // this.myState = {
+          // left: 500,
+          // width: 80,
+          // height: 20,
+          // top: 590
+        // };
+        // console.log('constructor');
+      }
+
+      componentWillMount(){
+        this.props.styles.push({left: 500});
+        this.props.styles.push({width: 80});
+        this.props.styles.push({height: 20});
+        this.props.styles.push({top: 590});
+      }
+
+      getCurrentState(){
+        // let state = this.state;
+         // alert(this.props.styles[0].left);
+        let style = {
+          backgroundColor: 'Red',
+          position: 'absolute',
+          left: this.props.styles[0].left + 'px',
+          width: this.props.styles[1].width + 'px',
+          height: this.props.styles[2].height+'px',
+          top: this.props.styles[3].top+'px'
+        };
+        return style;
+      }
+
+      render(){
+        return(
+          <div>
+          <div ref="up" style={this.getCurrentState()}>
+          </div>
+          {/* <MovingWoodPiece ref="cmwp" styles={[]} parentStyles={this.getCurrentState()}/>*/}
+          </div>
+        );
+      }
+
+      movePiece(e){
+        let event = window.event ? window.event : e;
+
+        let state = this.props.styles;
+        // let newState = {left: 0,width: 80,height: 20,top: 590};
+        //move left
+        if(event.keyCode == 37){
+          //let newLeft = state[0]-1;
+          //newState.left = newLeft;
+          //this.setState(newState);
+          let newLeft = state[0].left;
+          newLeft = newLeft - 8 ;
+          this.props.styles[0].left = newLeft;
+        }
+        //move right
+        else if(event.keyCode == 39){
+          // let newLeft = state.left+1;
+          // newState.left = newLeft;
+          // this.setState(newState);
+          let newLeft = state[0].left;
+          newLeft = newLeft + 8 ;
+          this.props.styles[0].left = newLeft;
+        }
+
+        this.refresh();
+      }
+
+      refresh(){
+        this.forceUpdate();
+      }
+    }
+
+    let woodPieceComponent = ReactDOM.render(<UserPiece styles={[]}/>,document.getElementById('game'));
+
+    //i for the row, j for the column
+    let standingPieces = [];
+    let movingBallComponent = ReactDOM.render(<MovingWoodPiece styles={[]}/>,document.getElementById('movingBall'));
+
+    for(let i=0;i<20;i++){
+      for(let j=0;j<10;j++){
+        let div = document.createElement("DIV");
+        div.id = i+'_'+j;
+        document.getElementById('standingBalls').appendChild(div);
+        let leftUp = {left:(i+5)*40 , top:360 - (40*j)};
+        let leftDown = {left:(i+5)*40,top:(360 - (40*j)) + 40};
+        let rightUp = {left:((i+5)*40) + 40 , top:360 - (40*j)};
+        let rightDown = {left:((i+5)*40) + 40 ,top:(360 - (40*j)) + 40};
+        let style = {leftUp: leftUp , leftDown: leftDown , rightUp: rightUp , rightDown: rightDown};
+        let standingWoodComponent = ReactDOM.render(<StandingWoodPiece exist={['true']} height='40px' width='40px' bgColor='Blue' position='absolute' style={style}/>,div);
+        standingWoodComponent.setMovingWoodPiece(movingBallComponent);
+        standingPieces.push(standingWoodComponent);
+      }
+    }
+
+    movingBallComponent.setStandingBallsArray(standingPieces);
+
+
+    //console.log();
+    //let childComponent = component.props.children[1];
+
+    // console.log(component.refs['cmwp'].__proto__);
+    // console.log(component);
+    // console.log(component.refs.cmwp);
+
+    // window.setInterval(component.refs.cmwp.__proto__.movePiece(),300);
+    movingBallComponent.setPieceComponentLeft(woodPieceComponent.props.styles[0].left);
+
+    window.globalOnKeyDown = function (e){
+      woodPieceComponent.movePiece(e);
+      movingBallComponent.setPieceComponentLeft(woodPieceComponent.props.styles[0].left);
+    }
+    </script>
+
+    <div id="game">
+    </div>
+    <div id="movingBall">
+    </div>
+    <div id="standingBalls">
+    </div>
+    <audio id="myAudio">
+      <source src="Slap-SoundMaster13-49669815.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </body>
+</html>
