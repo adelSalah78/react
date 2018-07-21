@@ -24,7 +24,7 @@
         // console.log(this.standingBalls);
         // console.log(this.standingBalls.length);
 
-        this.piecesInterval = setInterval(function(){
+        /*this.piecesInterval = setInterval(function(){
 
           if(this.standingBalls.length == 0){
             clearInterval(this.piecesInterval);
@@ -54,13 +54,43 @@
               break;
             }
           }
-        }.bind(this),1);
+        }.bind(this),1);*/
       }
+
+	  checkStandingWoods(){
+	     if(this.standingBalls.length == 0){
+            clearInterval(this.gameInterval);
+            alert('Congratulations, You win :D');
+          }
+
+          for(let i=0;i<this.standingBalls.length;i++){
+            if(this.standingBalls[i].checkDownHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkLeftHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkUpHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+            else if(this.standingBalls[i].checkRightHit()){
+              this.standingBalls.splice(i,1);
+              document.getElementById('myAudio').play();
+              break;
+            }
+          }
+	  }
 
       componentDidMount(){
         this.gameInterval = setInterval(function(){
           this.movePiece();
-        }.bind(this),8);
+        }.bind(this),5);
         // console.log('object: '+this.gameInterval);
       }
 
@@ -104,6 +134,8 @@
           clearInterval(this.gameInterval);
           return;
         }
+
+		this.checkStandingWoods();
         let vdir = this.props.styles[4].vdir;
         let hdir = this.props.styles[5].hdir;
 
@@ -112,7 +144,7 @@
         const smallLeft = 0;
         const bigLeft = 1270;
         const smallTop = 0;
-        const bigTop = 570;
+        const bigTop = 575;
 
         if(vdir == 'UP' && hdir == 'LEFT'){
           this.props.styles[0].left = this.props.styles[0].left - 1;
@@ -157,7 +189,8 @@
               if(this.gameOverCounter == 1)
                 setTimeout(function(){
                   // clearInterval(this.gameInterval);
-                  alert('Game Over !');
+                  document.getElementById('gameOver').play();
+				  alert('Game Over !');
                   window.location.href = window.location.href;
                 },360);
             }
@@ -183,7 +216,8 @@
               if(this.gameOverCounter == 1)
                 setTimeout(function(){
                   // clearInterval(this.gameInterval);
-                  alert('Game Over !');
+                  document.getElementById('gameOver').play();
+				  alert('Game Over !');
                   window.location.href = window.location.href;
                 },360);
             }
@@ -284,15 +318,15 @@
         if(mode == 'horizontal'){
           // console.log(point1.left >= point2.left && point1.left <= point3.left);
           if(direction == 'BOTTOM')
-            return (point1.left >= point2.left && point1.left <= point3.left) && point1.top == point2.top;
+            return (point1.left > point2.left && point1.left < point3.left) && point1.top-1 == point2.top;
           else
-            return (point1.left >= point2.left && point1.left <= point3.left) && point1.top+20 == point2.top;
+            return (point1.left > point2.left && point1.left < point3.left) && point1.top+19 == point2.top;
         }
         else{
           if(direction == 'RIGHT')
-            return (point1.top >= point2.top && point1.top <= point3.top) && point1.left + 20 == point2.left;
+            return (point1.top > point2.top && point1.top < point3.top) && point1.left + 20 == point2.left;
           else
-            return (point1.top >= point2.top && point1.top <= point3.top) && point1.left  == point2.left;
+            return (point1.top > point2.top && point1.top < point3.top) && point1.left  == point2.left;
         }
       }
 
@@ -357,7 +391,7 @@
       componentWillMount(){
         this.props.styles.push({left: 500});
         this.props.styles.push({width: 80});
-        this.props.styles.push({height: 20});
+        this.props.styles.push({height: 15});
         this.props.styles.push({top: 590});
       }
 
@@ -424,14 +458,14 @@
     let movingBallComponent = ReactDOM.render(<MovingWoodPiece styles={[]}/>,document.getElementById('movingBall'));
 
     for(let i=0;i<20;i++){
-      for(let j=0;j<10;j++){
+      for(let j=0;j<5;j++){
         let div = document.createElement("DIV");
         div.id = i+'_'+j;
         document.getElementById('standingBalls').appendChild(div);
-        let leftUp = {left:(i+5)*40 , top:360 - (40*j)};
-        let leftDown = {left:(i+5)*40,top:(360 - (40*j)) + 40};
-        let rightUp = {left:((i+5)*40) + 40 , top:360 - (40*j)};
-        let rightDown = {left:((i+5)*40) + 40 ,top:(360 - (40*j)) + 40};
+        let leftUp = {left:(i+5)*40 , top:300 - (40*j)};
+        let leftDown = {left:(i+5)*40,top:(300 - (40*j)) + 40};
+        let rightUp = {left:((i+5)*40) + 40 , top:300 - (40*j)};
+        let rightDown = {left:((i+5)*40) + 40 ,top:(300 - (40*j)) + 40};
         let style = {leftUp: leftUp , leftDown: leftDown , rightUp: rightUp , rightDown: rightDown};
         let standingWoodComponent = ReactDOM.render(<StandingWoodPiece exist={['true']} height='40px' width='40px' bgColor='Blue' position='absolute' style={style}/>,div);
         standingWoodComponent.setMovingWoodPiece(movingBallComponent);
@@ -466,6 +500,11 @@
     </div>
     <audio id="myAudio">
       <source src="Slap-SoundMaster13-49669815.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
+	 <audio id="gameOver">
+      <source src="gameOver.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
   </body>
